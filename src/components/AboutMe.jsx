@@ -3,32 +3,32 @@ import {base_url} from "../utils/constants.jsx";
 import "../css/aboutMe.css"
 
 const AboutMe = () => {
-    const [hero, setHero] = useState();
+    const [hero, setHero] = useState({});
+    const fillHero = async function (url) {
+        const response = await fetch(url);
+        const data = await response.json()
+        const hero = {
+            name: data.name,
+            height: data.height,
+            id: data.id,
+            birth_year: data.birth_year,
+            eye_color: data.eye_color,
+            gender: data.gender,
+            mass: data.mass,
+            createDate: Date.now()
+        }
+        setHero(hero);
+        localStorage.setItem("hero", JSON.stringify(hero));
+    }
+    const personId = 2;
 
     useEffect(() => {
-        const heroStorage = localStorage.getItem("hero");
-        if (heroStorage) {
-            //TODO create check on time (20 days)
-            const hero2 = JSON.parse(heroStorage);
-            setHero(hero2);
+        const heroStorage = JSON.parse(localStorage.getItem("hero"));
+        if (heroStorage && (Date.now() - heroStorage.createDate) < 1000 * 60 * 60 * 24 * 20) {
+            setHero(heroStorage);
         } else {
-            fetch(`${base_url}/v1/peoples/3`) //TODO * change id from hash
-                .then(response => response.json())
-                .then(data => {
-                    const hero = {
-                        name: data.name,
-                        height: data.height,
-                        id: data.id,
-                        birth_year: data.birth_year,
-                        eye_color: data.eye_color,
-                        gender: data.gender,
-                        mass: data.mass
-                    }
-                    setHero(hero);
-                    localStorage.setItem("hero", JSON.stringify(hero));
-                })
+            fillHero(`${base_url}/v1/peoples/${personId}`)
         }
-
         return () => {
             console.log("About Me unmount");
         }
